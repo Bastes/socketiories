@@ -1,6 +1,18 @@
 const _ = require('lodash')
+const http = require('http')
+const port = 8080
 
-const numbersToAdd = [3,4,10,2]
+const requestHandler = (request, response) => {
+  console.log(request.url)
+  response.end('Hello Node.js Server!')
+}
 
-result = _.assign({ 'a': 1 }, { 'b': 2 }, { 'c': 3 });
-console.log('The result is:', result)
+const server = http.createServer(requestHandler)
+
+server.listen(port, (err) => {
+  if (err) {
+    return console.log('something bad happened', err)
+  }
+
+  console.log(`server is listening on ${port}`)
+})
