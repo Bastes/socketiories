@@ -1,18 +1,14 @@
-const _ = require('lodash')
-const http = require('http')
-const port = 8080
+const restify = require('restify')
 
-const requestHandler = (request, response) => {
-  console.log(request.url)
-  response.end('Hello Node.js Server!')
+function respond(req, res, next) {
+  res.send('hello ' + req.params.name)
+  next()
 }
 
-const server = http.createServer(requestHandler)
+var server = restify.createServer();
+server.get('/hello/:name', respond)
+server.head('/hello/:name', respond)
 
-server.listen(port, (err) => {
-  if (err) {
-    return console.log('something bad happened', err)
-  }
-
-  console.log(`server is listening on ${port}`)
+server.listen(8080, function() {
+  console.log('%s listening at %s', server.name, server.url)
 })
