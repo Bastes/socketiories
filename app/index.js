@@ -1,14 +1,22 @@
-const restify = require('restify')
+var app = require('express')();
+var http = require('http').Server(app);
+var io = require('socket.io')(http);
 
-function respond(req, res, next) {
-  res.send('hello ' + req.params.name)
-  next()
-}
+app.get('/', function(req, res){
+  res.sendFile(__dirname + '/index.html');
+});
 
-var server = restify.createServer();
-server.get('/hello/:name', respond)
-server.head('/hello/:name', respond)
+io.on('connection', function(socket){
+  console.log('a user connected');
+  socket.on('chat message', function(msg){
+    console.log('message: ' + msg);
+    io.emit('chat message', msg);
+  });
+  socket.on('disconnect', function(){
+    console.log('user disconnected');
+  });
+});
 
-server.listen(8080, function() {
-  console.log('%s listening at %s', server.name, server.url)
-})
+http.listen(3000, function(){
+  console.log('listening on *:3000');
+});
