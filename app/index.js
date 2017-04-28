@@ -13,7 +13,7 @@ io.on('connection', function (socket) {
   users.push(id)
   var connectionMessage = `user ${id} connected, ${users.length} connected`
   console.log(connectionMessage)
-  io.emit('user enters', connectionMessage)
+  socket.broadcast.emit('user enters', connectionMessage)
   socket.on('chat message', function (msg) {
     var message = `${id} says: ${msg}`
     console.log(message)
