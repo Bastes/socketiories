@@ -8,6 +8,10 @@ app.get('/', function (req, res) {
   res.sendFile(__dirname + '/index.html')
 })
 
+app.get('/client.js', function (req, res) {
+  res.sendFile(__dirname + '/client.js')
+})
+
 io.on('connection', function (socket) {
   var id = (_(users).last() || 0) + 1
   users.push(id)
