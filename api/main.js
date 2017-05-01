@@ -12,9 +12,16 @@ const INDEX_HTML = path.join(CLIENT_DIR, "index.html")
 const DEFAULT_PORT = 3000
 const PORT = process.env.PORT || DEFAULT_PORT
 
+const webpackDevMiddleware = require("webpack-dev-middleware")
+const webpack = require("webpack")
+const webpackConfig = require(path.join(ROOT, "webpack.config"))
+const compiler = webpack(webpackConfig)
+
 var users = []
 
-app.use(express.static(DIST_DIR));
+app.use(webpackDevMiddleware(compiler, {
+  publicPath: '/'
+}))
 
 app.get('/', function (req, res) {
   res.sendFile(INDEX_HTML)
