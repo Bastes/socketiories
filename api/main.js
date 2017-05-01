@@ -1,21 +1,23 @@
 const path = require('path')
-const app = require('express')()
+const express = require('express')
+const app = express()
 const http = require('http').Server(app)
 const io = require('socket.io')(http)
 const _ = require('lodash')
 
 const ROOT = path.dirname(__dirname)
+const DIST_DIR = path.join(ROOT, "dist")
+const CLIENT_DIR = path.join(ROOT, "client")
+const INDEX_HTML = path.join(CLIENT_DIR, "index.html")
 const DEFAULT_PORT = 3000
 const PORT = process.env.PORT || DEFAULT_PORT
 
 var users = []
 
-app.get('/', function (req, res) {
-  res.sendFile(ROOT + '/client/index.html')
-})
+app.use(express.static(DIST_DIR));
 
-app.get('/index.js', function (req, res) {
-  res.sendFile(ROOT + '/client/index.js')
+app.get('/', function (req, res) {
+  res.sendFile(INDEX_HTML)
 })
 
 io.on('connection', function (socket) {

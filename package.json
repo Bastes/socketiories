@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js",
+    "start": "webpack & node server.js",
+    "dev": "webpack & nodemon server.js",
     "test": "mocha"
   },
   "author": "",
@@ -16,7 +16,10 @@
     "socket.io": "^1.7.3"
   },
   "devDependencies": {
+    "babel-loader": "^7.0.0",
+    "jsx-loader": "^0.13.2",
     "mocha": "^3.3.0",
-    "nodemon": "^1.11.0"
+    "nodemon": "^1.11.0",
+    "webpack": "^2.4.1"
   }
 }
