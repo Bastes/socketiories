@@ -1,19 +1,21 @@
-require('./chat.styl')
+require('./chat.styl');
 
-$(function () {
-  var socket = io()
-  $('form').submit(function () {
-    socket.emit('chat message', $('#m').val())
-    $('#m').val('')
-    return false
+var Elm = require('./index.elm');
+var mountNode = document.getElementById('main');
+var app = Elm.Index.embed(mountNode);
+
+var socket = io();
+
+[
+  'user enters',
+  'chat message',
+  'user leaves'
+].forEach(function (msgType) {
+  socket.on(msgType, function (msg) {
+    app.ports.received.send(msg);
   })
-  socket.on('user enters', function (msg) {
-    $('#messages').append($('<li>').text(msg))
-  })
-  socket.on('chat message', function (msg) {
-    $('#messages').append($('<li>').text(msg))
-  })
-  socket.on('user leaves', function (msg) {
-    $('#messages').append($('<li>').text(msg))
-  })
-})
+});
+
+app.ports.sending.subscribe(function (msg) {
+  socket.emit('chat message', msg);
+});
