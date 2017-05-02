@@ -18,9 +18,13 @@
   "devDependencies": {
     "babel-core": "^6.24.1",
     "babel-loader": "^7.0.0",
+    "css-loader": "^0.28.1",
     "jsx-loader": "^0.13.2",
     "mocha": "^3.3.0",
     "nodemon": "^1.11.0",
+    "style-loader": "^0.17.0",
+    "stylus": "^0.54.5",
+    "stylus-loader": "^3.0.1",
     "webpack": "^2.4.1",
     "webpack-dev-middleware": "^1.10.2"
   }

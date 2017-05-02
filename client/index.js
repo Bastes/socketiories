@@ -1,3 +1,5 @@
+require('./chat.styl')
+
 $(function () {
   var socket = io()
   $('form').submit(function () {

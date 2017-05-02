@@ -10,7 +10,7 @@ module.exports = {
     filename: 'bundle.js'
   },
   resolve: {
-    extensions: ['.js']
+    extensions: ['.js', '.styl']
   },
   module: {
     rules: [
@@ -18,6 +18,10 @@ module.exports = {
         test: /\.js$/,
         exclude: /node_modules/,
         use: ['jsx-loader', 'babel-loader']
+      },
+      {
+        test: /\.styl$/,
+        loader: 'style-loader!css-loader!stylus-loader'
       }
     ]
   }
