@@ -16,6 +16,7 @@
     "socket.io": "^1.7.3"
   },
   "devDependencies": {
+    "babel-core": "^6.24.1",
     "babel-loader": "^7.0.0",
     "jsx-loader": "^0.13.2",
     "mocha": "^3.3.0",
