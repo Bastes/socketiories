@@ -3,6 +3,7 @@ port module Index exposing (..)
 import Html exposing (Html, program, div, form, input, text)
 import Html.Attributes exposing (id, autocomplete, type_, value)
 import Html.Events exposing (onInput, onSubmit)
+import WebSocket as WS
 
 
 main : Program Never Model Msg
@@ -54,17 +55,7 @@ update msg model =
             ( { model | currentMessage = message }, Cmd.none )
 
         Sending ->
-            ( { model | currentMessage = "" }, sending model.currentMessage )
-
-
-
--- PORTS
-
-
-port received : (String -> msg) -> Sub msg
-
-
-port sending : String -> Cmd msg
+            ( { model | currentMessage = "" }, WS.send "ws://localhost:3000" model.currentMessage )
 
 
 
@@ -73,7 +64,7 @@ port sending : String -> Cmd msg
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    received Received
+    WS.listen "ws://localhost:3000" Received
 
 
 

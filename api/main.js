@@ -1,8 +1,8 @@
 const path = require('path')
 const express = require('express')
-const app = express()
-const http = require('http').Server(app)
-const io = require('socket.io')(http)
+const http = require('http')
+const url = require('url')
+const WebSocket = require('ws')
 const _ = require('lodash')
 
 const ROOT = path.dirname(__dirname)
@@ -17,35 +17,57 @@ const webpack = require("webpack")
 const webpackConfig = require(path.join(ROOT, "webpack.config"))
 const compiler = webpack(webpackConfig)
 
+const app = express()
+const server = http.createServer(app)
+const wss = new WebSocket.Server({ server })
+
 var users = []
 
 app.use(webpackDevMiddleware(compiler, {
   publicPath: '/'
 }))
 
-app.get('/', function (req, res) {
+app.get('/', function root(req, res) {
   res.sendFile(INDEX_HTML)
 })
 
-io.on('connection', function (socket) {
-  var id = (_(users).last() || 0) + 1
+wss.broadcast = function broadcast(data) {
+  wss.clients.forEach(function each(client) {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(data);
+    }
+  })
+}
+
+wss.broadcastExcept = function broadcastExcept(ws, data) {
+  wss.clients.forEach(function each(client) {
+    if (client !== ws && client.readyState === WebSocket.OPEN) {
+      client.send(data);
+    }
+  })
+}
+
+wss.on('connection', function connection(ws) {
+  const location = url.parse(ws.upgradeReq.url, true)
+  const id = (_(users).last() || 0) + 1
   users.push(id)
-  var connectionMessage = `user ${id} connected, ${users.length} connected`
+  var connectionMessage = `user ${id} connected (${users.length} connected: ${users.join(", ")})`
   console.log(connectionMessage)
-  socket.broadcast.emit('user enters', connectionMessage)
-  socket.on('chat message', function (msg) {
+  wss.broadcast(connectionMessage)
+
+  ws.on('message', function incoming(msg) {
     var message = `${id} says: ${msg}`
     console.log(message)
-    io.emit('chat message', message)
+    wss.broadcast(message)
   })
-  socket.on('disconnect', function () {
+  ws.on('close', function disconnection() {
     _.remove(users, _.partial(_.eq, id))
-    var disconnectionMessage = `user ${id} disconnected, ${users.length} user(s) remain`
+    var disconnectionMessage = `user ${id} disconnected (${users.length} user(s) remain: ${users.join(", ")})`
     console.log(disconnectionMessage)
-    io.emit('user leaves', disconnectionMessage)
+    wss.broadcastExcept(ws, disconnectionMessage)
   })
 })
 
-http.listen(PORT, function () {
+server.listen(PORT, function listening() {
   console.log(`listening on *:${PORT}`)
 })
