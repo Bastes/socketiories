@@ -1,14 +1,14 @@
 port module Index exposing (..)
 
-import Html exposing (Html, program, div, form, input, text)
+import Html exposing (Html, programWithFlags, div, form, input, text)
 import Html.Attributes exposing (id, autocomplete, type_, value)
 import Html.Events exposing (onInput, onSubmit)
 import WebSocket as WS
 
 
-main : Program Never Model Msg
+main : Program Flags Model Msg
 main =
-    program
+    programWithFlags
         { init = init
         , view = view
         , update = update
@@ -20,16 +20,23 @@ main =
 -- MODEL
 
 
-type alias Model =
-    { messages : List String
-    , currentMessage : String
+type alias Flags =
+    { websocketUrl : String
     }
 
 
-init : ( Model, Cmd Msg )
-init =
+type alias Model =
+    { messages : List String
+    , currentMessage : String
+    , websocketUrl : String
+    }
+
+
+init : Flags -> ( Model, Cmd Msg )
+init flags =
     ( { messages = []
       , currentMessage = ""
+      , websocketUrl = flags.websocketUrl
       }
     , Cmd.none
     )
@@ -55,7 +62,7 @@ update msg model =
             ( { model | currentMessage = message }, Cmd.none )
 
         Sending ->
-            ( { model | currentMessage = "" }, WS.send "ws://localhost:3000" model.currentMessage )
+            ( { model | currentMessage = "" }, WS.send model.websocketUrl model.currentMessage )
 
 
 
@@ -64,7 +71,7 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    WS.listen "ws://localhost:3000" Received
+    WS.listen model.websocketUrl Received
 
 
 
