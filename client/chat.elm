@@ -62,7 +62,12 @@ update msg model =
             ( { model | currentMessage = message }, Cmd.none )
 
         Sending ->
-            ( { model | currentMessage = "" }, WS.send model.websocketUrl model.currentMessage )
+            ( { model
+                | messages = model.currentMessage :: model.messages
+                , currentMessage = ""
+              }
+            , WS.send model.websocketUrl model.currentMessage
+            )
 
 
 

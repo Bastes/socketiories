@@ -51,14 +51,15 @@ wss.on('connection', function connection(ws) {
   const location = url.parse(ws.upgradeReq.url, true)
   const id = (_(users).last() || 0) + 1
   users.push(id)
-  var connectionMessage = `user ${id} connected (${users.length} connected: ${users.join(", ")})`
+  var connectionMessage = `user ${id} joined (${users.length} connected: ${users.join(", ")})`
   console.log(connectionMessage)
-  wss.broadcast(connectionMessage)
+  wss.broadcastExcept(ws, connectionMessage)
+  ws.send(`hello user ${id} :) (${users.length} connected: ${users.join(", ")})`)
 
   ws.on('message', function incoming(msg) {
     var message = `${id} says: ${msg}`
     console.log(message)
-    wss.broadcast(message)
+    wss.broadcastExcept(ws, message)
   })
   ws.on('close', function disconnection() {
     _.remove(users, _.partial(_.eq, id))
