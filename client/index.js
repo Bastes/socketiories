@@ -1,4 +1,6 @@
 require('./chat.styl');
 
 var Elm = require('./chat.elm');
-var app = Elm.Chat.fullscreen({ websocketUrl: "ws://localhost:3000" });
+var app = Elm.Chat.fullscreen({
+  websocketUrl: window.location.href.replace(/^http:/, 'ws:')
+});
