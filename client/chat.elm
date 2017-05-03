@@ -1,4 +1,4 @@
-port module Index exposing (..)
+port module Chat exposing (..)
 
 import Html exposing (Html, programWithFlags, div, form, input, text)
 import Html.Attributes exposing (id, autocomplete, type_, value)

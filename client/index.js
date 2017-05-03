@@ -1,4 +1,4 @@
 require('./chat.styl');
 
-var Elm = require('./index.elm');
-var app = Elm.Index.fullscreen({ websocketUrl: "ws://localhost:3000" });
+var Elm = require('./chat.elm');
+var app = Elm.Chat.fullscreen({ websocketUrl: "ws://localhost:3000" });
