@@ -19,22 +19,29 @@ const compiler = webpack(webpackConfig)
 
 const app = express()
 const server = http.createServer(app)
+const sessionParser = require('express-session')({
+  secret: 'secret',
+  resave: true,
+  saveUninitialized: true
+});
 const wss = new WebSocket.Server({ server })
 
 var users = []
 
+app.use(sessionParser)
 app.use(webpackDevMiddleware(compiler, {
   publicPath: '/'
 }))
 
 app.get('/', function root(req, res) {
+  req.session.working = 'yes!'
   res.sendFile(INDEX_HTML)
 })
 
 wss.broadcast = function broadcast(data) {
   wss.clients.forEach(function each(client) {
     if (client.readyState === WebSocket.OPEN) {
-      client.send(data);
+      client.send(data)
     }
   })
 }
@@ -42,7 +49,7 @@ wss.broadcast = function broadcast(data) {
 wss.broadcastExcept = function broadcastExcept(ws, data) {
   wss.clients.forEach(function each(client) {
     if (client !== ws && client.readyState === WebSocket.OPEN) {
-      client.send(data);
+      client.send(data)
     }
   })
 }
@@ -55,6 +62,11 @@ wss.on('connection', function connection(ws) {
   console.log(connectionMessage)
   wss.broadcastExcept(ws, connectionMessage)
   ws.send(`hello user ${id} :) (${users.length} connected: ${users.join(", ")})`)
+
+  sessionParser(ws.upgradeReq, {}, function(){
+    var sess = ws.upgradeReq.session
+    console.log("working = " + sess.working)
+  })
 
   ws.on('message', function incoming(msg) {
     var message = `${id} says: ${msg}`
