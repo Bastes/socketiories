@@ -34,28 +34,7 @@ const sessionParser = session({
 });
 const wss = new WebSocket.Server({ server })
 
-const MongoClient = require("mongodb").MongoClient
-DB = (function (mongodb_url) {
-  var db = {}
-  var databasePool = null
-
-  function initPool(callback) {
-    MongoClient.connect("mongodb://localhost/skull", function(error, db) {
-      if (error) throw error
-      databasePool = db
-      callback(databasePool)
-    })
-  }
-
-  function getInstance(callback) {
-    if (databasePool) return callback(databasePool)
-    initPool(callback)
-  }
-
-  db.initPool = initPool
-  db.getInstance = getInstance
-  return db
-})(MONGODB_URL)
+var DB = require('./boot/database')(MONGODB_URL)
 
 DB.getInstance(function (db) {
   var objNew = { name: "GLaDOS", game: "Portal" }
