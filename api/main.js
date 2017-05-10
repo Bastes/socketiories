@@ -11,23 +11,17 @@ const INDEX_HTML = path.join(CLIENT_DIR, "index.html")
 const DEFAULT_PORT = 3000
 const PORT = process.env.PORT || DEFAULT_PORT
 
-const webpackDevMiddleware = require("webpack-dev-middleware")
-const webpack = require("webpack")
-const webpackConfig = require(path.join(ROOT, "webpack.config"))
-const compiler = webpack(webpackConfig)
-
 const app = express()
 const server = http.createServer(app)
 const sessionParser = require('./boot/session')
 const wss = require('./boot/websocket')(server)
 const DB = require('./boot/database')
+const webpackDevMiddleware = require('./boot/webpack')(path.join(ROOT, "webpack.config"))
 
 var users = []
 
 app.use(sessionParser)
-app.use(webpackDevMiddleware(compiler, {
-  publicPath: '/'
-}))
+app.use(webpackDevMiddleware)
 
 app.get('/', function root(req, res) {
   res.sendFile(INDEX_HTML)
