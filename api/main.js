@@ -24,24 +24,6 @@ const wss = new WebSocket.Server({ server })
 
 var DB = require('./boot/database')
 
-DB.getInstance(function (db) {
-  var objNew = { name: "GLaDOS", game: "Portal" }
-  db.collection("personnages")
-    .insert(objNew, null, function (error, results) {
-      if (error) throw error
-      console.log("insertion réalisée avec succès ; résultats:", results)
-    })
-})
-
-DB.getInstance(function (db) {
-  var obj = { name: "Gordon Freeman", game: "Half-Life" }
-  db.collection("personnages")
-    .update({name: obj.name}, {$set: { game: obj.game }}, {upsert: true}, function (error, results) {
-      if (error) throw error
-      console.log("insertion/mise à jour réalisée avec succès ; résultats:", results)
-    })
-})
-
 var users = []
 
 app.use(sessionParser)
