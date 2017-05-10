@@ -32,7 +32,6 @@ app.use(webpackDevMiddleware(compiler, {
 }))
 
 app.get('/', function root(req, res) {
-  req.session.working = 'yes!'
   res.sendFile(INDEX_HTML)
 })
 
@@ -60,11 +59,6 @@ wss.on('connection', function connection(ws) {
   console.log(connectionMessage)
   wss.broadcastExcept(ws, connectionMessage)
   ws.send(`hello user ${id} :) (${users.length} connected: ${users.join(", ")})`)
-
-  sessionParser(ws.upgradeReq, {}, function(){
-    var sess = ws.upgradeReq.session
-    console.log("working = " + sess.working)
-  })
 
   ws.on('message', function incoming(msg) {
     var message = `${id} says: ${msg}`
