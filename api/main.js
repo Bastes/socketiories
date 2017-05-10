@@ -20,18 +20,7 @@ const compiler = webpack(webpackConfig)
 
 const app = express()
 const server = http.createServer(app)
-const session = require('express-session')
-const RedisStore = require('connect-redis')(session)
-const redisConfig = {
-  host: 'localhost',
-  port: 6379
-}
-const sessionParser = session({
-  store: new RedisStore(redisConfig),
-  secret: 'secret',
-  resave: true,
-  saveUninitialized: true
-});
+const sessionParser = require('./boot/session')
 const wss = new WebSocket.Server({ server })
 
 var DB = require('./boot/database')(MONGODB_URL)
