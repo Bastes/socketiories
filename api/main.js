@@ -21,8 +21,7 @@ const app = express()
 const server = http.createServer(app)
 const sessionParser = require('./boot/session')
 const wss = new WebSocket.Server({ server })
-
-var DB = require('./boot/database')
+const DB = require('./boot/database')
 
 var users = []
 
