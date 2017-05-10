@@ -1,7 +1,6 @@
 const path = require('path');
 const express = require('express');
 const http = require('http');
-const url = require('url');
 const _ = require('lodash');
 
 const ROOT = path.dirname(__dirname);
@@ -29,7 +28,6 @@ app.get('/', function root(req, res) {
 });
 
 wss.on('connection', function connection(ws) {
-  const location = url.parse(ws.upgradeReq.url, true)
   const id = (_(users).last() || 0) + 1;
   users.push(id);
   var connectionMessage = `user ${id} joined (${users.length} connected: ${users.join(", ")})`;
