@@ -1,6 +1,8 @@
 const path = require('path');
 const express = require('express');
+const url = require('url')
 const http = require('http');
+const proxy = require('proxy-middleware');
 const _ = require('lodash');
 
 const ROOT = path.dirname(__dirname);
@@ -16,12 +18,11 @@ const server = http.createServer(app);
 const sessionParser = require('./boot/session')
 const wss = require('./boot/websocket')(server)
 const DB = require('./boot/database')
-const webpackDevMiddleware = require('./boot/webpack')(path.join(ROOT, "webpack.config"))
 
 var users = [];
 
 app.use(sessionParser);
-app.use(webpackDevMiddleware);
+app.use('/assets', proxy(url.parse('http://localhost:8080/assets')))
 
 app.get('/', function root(req, res) {
   res.sendFile(INDEX_HTML);
