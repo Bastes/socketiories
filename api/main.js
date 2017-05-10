@@ -11,6 +11,7 @@ const CLIENT_DIR = path.join(ROOT, "client")
 const INDEX_HTML = path.join(CLIENT_DIR, "index.html")
 const DEFAULT_PORT = 3000
 const PORT = process.env.PORT || DEFAULT_PORT
+const MONGODB_URL = "mongodb://localhost/skull"
 
 const webpackDevMiddleware = require("webpack-dev-middleware")
 const webpack = require("webpack")
@@ -32,6 +33,47 @@ const sessionParser = session({
   saveUninitialized: true
 });
 const wss = new WebSocket.Server({ server })
+
+const MongoClient = require("mongodb").MongoClient
+DB = (function (mongodb_url) {
+  var db = {}
+  var databasePool = null
+
+  function initPool(callback) {
+    MongoClient.connect("mongodb://localhost/skull", function(error, db) {
+      if (error) throw error
+      databasePool = db
+      callback(databasePool)
+    })
+  }
+
+  function getInstance(callback) {
+    if (databasePool) return callback(databasePool)
+    initPool(callback)
+  }
+
+  db.initPool = initPool
+  db.getInstance = getInstance
+  return db
+})(MONGODB_URL)
+
+DB.getInstance(function (db) {
+  var objNew = { name: "GLaDOS", game: "Portal" }
+  db.collection("personnages")
+    .insert(objNew, null, function (error, results) {
+      if (error) throw error
+      console.log("insertion réalisée avec succès ; résultats:", results)
+    })
+})
+
+DB.getInstance(function (db) {
+  var obj = { name: "Gordon Freeman", game: "Half-Life" }
+  db.collection("personnages")
+    .update({name: obj.name}, {$set: { game: obj.game }}, {upsert: true}, function (error, results) {
+      if (error) throw error
+      console.log("insertion/mise à jour réalisée avec succès ; résultats:", results)
+    })
+})
 
 var users = []
 
