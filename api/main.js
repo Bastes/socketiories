@@ -2,7 +2,6 @@ const path = require('path')
 const express = require('express')
 const http = require('http')
 const url = require('url')
-const WebSocket = require('ws')
 const _ = require('lodash')
 
 const ROOT = path.dirname(__dirname)
@@ -20,7 +19,7 @@ const compiler = webpack(webpackConfig)
 const app = express()
 const server = http.createServer(app)
 const sessionParser = require('./boot/session')
-const wss = new WebSocket.Server({ server })
+const wss = require('./boot/websocket')(server)
 const DB = require('./boot/database')
 
 var users = []
@@ -33,22 +32,6 @@ app.use(webpackDevMiddleware(compiler, {
 app.get('/', function root(req, res) {
   res.sendFile(INDEX_HTML)
 })
-
-wss.broadcast = function broadcast(data) {
-  wss.clients.forEach(function each(client) {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(data)
-    }
-  })
-}
-
-wss.broadcastExcept = function broadcastExcept(ws, data) {
-  wss.clients.forEach(function each(client) {
-    if (client !== ws && client.readyState === WebSocket.OPEN) {
-      client.send(data)
-    }
-  })
-}
 
 wss.on('connection', function connection(ws) {
   const location = url.parse(ws.upgradeReq.url, true)
