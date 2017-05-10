@@ -1,22 +1,23 @@
 const MongoClient = require("mongodb").MongoClient
-module.exports = function (mongodb_url) {
-  var db = {};
-  var databasePool = null;
+const MONGODB_URL = "mongodb://localhost/skull"
 
-  function initPool(callback) {
-    MongoClient.connect(mongodb_url, function(error, db) {
-      if (error) throw error;
-      databasePool = db;
-      callback(databasePool);
-    })
-  };
+var db = {};
+var databasePool = null;
 
-  function getInstance(callback) {
-    if (databasePool) return callback(databasePool);
-    initPool(callback);
-  };
+function initPool(callback) {
+  MongoClient.connect(MONGODB_URL, function(error, db) {
+    if (error) throw error;
+    databasePool = db;
+    callback(databasePool);
+  })
+};
 
-  db.initPool = initPool;
-  db.getInstance = getInstance;
-  return db;
-}
+function getInstance(callback) {
+  if (databasePool) return callback(databasePool);
+  initPool(callback);
+};
+
+db.initPool = initPool;
+db.getInstance = getInstance;
+
+module.exports = db;

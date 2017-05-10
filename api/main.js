@@ -11,7 +11,6 @@ const CLIENT_DIR = path.join(ROOT, "client")
 const INDEX_HTML = path.join(CLIENT_DIR, "index.html")
 const DEFAULT_PORT = 3000
 const PORT = process.env.PORT || DEFAULT_PORT
-const MONGODB_URL = "mongodb://localhost/skull"
 
 const webpackDevMiddleware = require("webpack-dev-middleware")
 const webpack = require("webpack")
@@ -23,7 +22,7 @@ const server = http.createServer(app)
 const sessionParser = require('./boot/session')
 const wss = new WebSocket.Server({ server })
 
-var DB = require('./boot/database')(MONGODB_URL)
+var DB = require('./boot/database')
 
 DB.getInstance(function (db) {
   var objNew = { name: "GLaDOS", game: "Portal" }
