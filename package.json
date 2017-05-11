@@ -13,27 +13,24 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "connect-redis": "^3.3.0",
+    "lodash": "^4.17.4",
     "express": "^4.15.2",
     "express-session": "^1.15.2",
-    "lodash": "^4.17.4",
+    "ws": "^2.3.1",
+    "connect-redis": "^3.3.0",
     "mongodb": "^2.2.26",
-    "proxy-middleware": "^0.15.0",
-    "ws": "^2.3.1"
-  },
-  "devDependencies": {
-    "babel-core": "^6.24.1",
-    "babel-loader": "^7.0.0",
+    "webpack": "^2.4.1",
     "css-loader": "^0.28.1",
-    "elm-webpack-loader": "^4.3.1",
-    "foreman": "^2.0.0",
-    "jsx-loader": "^0.13.2",
-    "mocha": "^3.3.0",
-    "nodemon": "^1.11.0",
     "style-loader": "^0.17.0",
     "stylus": "^0.54.5",
     "stylus-loader": "^3.0.1",
-    "webpack": "^2.4.1",
-    "webpack-dev-server": "^2.4.5"
+    "elm-webpack-loader": "^4.3.1"
+  },
+  "devDependencies": {
+    "proxy-middleware": "^0.15.0",
+    "foreman": "^2.0.0",
+    "nodemon": "^1.11.0",
+    "webpack-dev-server": "^2.4.5",
+    "mocha": "^3.3.0"
   }
 }
