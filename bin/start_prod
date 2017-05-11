@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+webpack && NODE_ENV=production nf start -j Procfile

@@ -1,0 +1,2 @@
+api: npm run dev-api
+assets: npm run dev-assets

@@ -4,8 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "webpack & node server.js",
-    "dev": "webpack & nodemon server.js",
+    "start": "node server.js",
+    "dev-api": "nodemon server.js",
+    "dev-assets": "webpack-dev-server",
+    "heroku-postbuild": "webpack -p --config ./webpack.config.js --progress",
     "test": "mocha"
   },
   "author": "",
@@ -24,6 +26,7 @@
     "babel-loader": "^7.0.0",
     "css-loader": "^0.28.1",
     "elm-webpack-loader": "^4.3.1",
+    "foreman": "^2.0.0",
     "jsx-loader": "^0.13.2",
     "mocha": "^3.3.0",
     "nodemon": "^1.11.0",

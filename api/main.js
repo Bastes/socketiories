@@ -15,14 +15,21 @@ const PORT = process.env.PORT || DEFAULT_PORT;
 const app = express();
 const server = http.createServer(app);
 
-const sessionParser = require('./boot/session')
-const wss = require('./boot/websocket')(server)
-const DB = require('./boot/database')
+const sessionParser = require('./boot/session');
+const wss = require('./boot/websocket')(server);
+const DB = require('./boot/database');
+
+console.log(`starting in ${process.env.NODE_ENV} mode`)
 
 var users = [];
 
 app.use(sessionParser);
-app.use('/assets', proxy(url.parse('http://localhost:8080/assets')))
+
+if (process.env.NODE_ENV === 'development')
+  app.use('/assets', proxy(url.parse('http://localhost:8080/assets')));
+
+if (process.env.NODE_ENV === 'production')
+  app.use('/assets', express.static('dist'));
 
 app.get('/', function root(req, res) {
   res.sendFile(INDEX_HTML);
