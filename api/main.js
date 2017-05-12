@@ -5,11 +5,8 @@ const http = require('http');
 const _ = require('lodash');
 
 const ROOT = path.dirname(__dirname);
-const DIST_DIR = path.join(ROOT, "dist");
-const CLIENT_DIR = path.join(ROOT, "client");
-const INDEX_HTML = path.join(CLIENT_DIR, "index.html");
-const DEFAULT_PORT = 3000;
-const PORT = process.env.PORT || DEFAULT_PORT;
+const INDEX_HTML = path.join(ROOT, "client", "index.html");
+const PORT = process.env.PORT || 3000;
 
 const app = express();
 const server = http.createServer(app);
