@@ -1,6 +1,5 @@
 const path = require('path');
 const express = require('express');
-const url = require('url')
 const http = require('http');
 const _ = require('lodash');
 
@@ -21,13 +20,7 @@ var users = [];
 
 app.use(sessionParser);
 
-if (process.env.NODE_ENV === 'development') {
-  const proxy = require('proxy-middleware');
-  app.use('/assets', proxy(url.parse('http://localhost:8080/assets')));
-}
-
-if (process.env.NODE_ENV === 'production')
-  app.use('/assets', express.static('dist'));
+require('./boot/environments')(process, app, express);
 
 app.get('/', function root(req, res) {
   res.sendFile(INDEX_HTML);
