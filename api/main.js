@@ -1,7 +1,6 @@
 const path = require('path');
 const express = require('express');
 const cookieParser = require('cookie-parser')();
-const cookieSession = require('cookie-session');
 const bodyParser = require('body-parser');
 const http = require('http');
 const _ = require('lodash');
@@ -22,11 +21,6 @@ console.log(`starting in ${process.env.NODE_ENV} mode`)
 var users = [];
 
 app.use(cookieParser);
-app.use(cookieSession({
-  name: 'session',
-  secret: 'secret',
-  maxAge: 1 * 60 * 60 * 1000
-}));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(sessionParser);
 
