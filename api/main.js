@@ -1,6 +1,7 @@
 const path = require('path');
 const express = require('express');
-const cookieParser = require('cookie-parser')();
+const cookie = require('cookie');
+const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const http = require('http');
 const _ = require('lodash');
@@ -12,15 +13,25 @@ const PORT = process.env.PORT || 3000;
 const app = express();
 const server = http.createServer(app);
 
-const sessionParser = require('./boot/session');
+const session = require('express-session');
+const redis = require('redis');
+const RedisStore = require('connect-redis')(session);
+const redisClient = redis.createClient({ url: process.env.REDISCLOUD_URL });
+
+const sessionStore = new RedisStore({ client: redisClient });
+const sessionParser = session({
+  store: sessionStore,
+  secret: 'secret',
+  resave: true,
+  saveUninitialized: true
+});
+
 const wss = require('./boot/websocket')(server);
 const DB = require('./boot/database');
 
 console.log(`starting in ${process.env.NODE_ENV} mode`)
 
-var users = [];
-
-app.use(cookieParser);
+app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(sessionParser);
 
@@ -66,6 +77,13 @@ app.use(passport.session());
 
 app.get('/', function root(req, res) {
   console.log("user: ", req.user);
+  var cookies = cookie.parse(req.headers.cookie);
+  var sid = cookieParser.signedCookie(cookies["session.sid"], 'secret');
+  console.log("get / cookies:", cookies);
+  console.log("get / sid:", sid);
+  sessionStore.get(sid, function (err, ss) {
+    console.log("get / session store:", err, ss);
+  });
   res.sendFile(INDEX_HTML);
 });
 
@@ -87,23 +105,28 @@ app.get('/auth/google/callback',
   function(req, res) { res.redirect('/'); });
 
 wss.on('connection', function connection(ws) {
-  const id = (_(users).last() || 0) + 1;
-  users.push(id);
-  var connectionMessage = `user ${id} joined (${users.length} connected: ${users.join(", ")})`;
-  console.log(connectionMessage);
-  wss.broadcastExcept(ws, connectionMessage);
-  ws.send(`hello user ${id} :) (${users.length} connected: ${users.join(", ")})`);
+  var cookies = cookie.parse(ws.upgradeReq.headers.cookie);
+  var sid = cookieParser.signedCookie(cookies["connect.sid"], 'secret');
+  sessionStore.get(sid, function (err, ss) {
+    const user = ss.passport.user;
+    console.log("user:", user);
 
-  ws.on('message', function incoming(msg) {
-    var message = `${id} says: ${msg}`;
-    console.log(message);
-    wss.broadcastExcept(ws, message);
-  });
-  ws.on('close', function disconnection() {
-    _.remove(users, _.partial(_.eq, id));
-    var disconnectionMessage = `user ${id} disconnected (${users.length} user(s) remain: ${users.join(", ")})`;
-    console.log(disconnectionMessage);
-    wss.broadcastExcept(ws, disconnectionMessage);
+    id = "whatever";
+    var connectionMessage = `user ${id} joined`;
+    console.log(connectionMessage);
+    wss.broadcastExcept(ws, connectionMessage);
+    ws.send(`hello ${id} :)`);
+
+    ws.on('message', function incoming(msg) {
+      var message = `${id} says: ${msg}`;
+      console.log(message);
+      wss.broadcastExcept(ws, message);
+    });
+    ws.on('close', function disconnection() {
+      var disconnectionMessage = `user ${id} disconnected`;
+      console.log(disconnectionMessage);
+      wss.broadcastExcept(ws, disconnectionMessage);
+    });
   });
 });
 
