@@ -8,6 +8,7 @@ const _ = require('lodash');
 
 const ROOT = path.dirname(__dirname);
 const INDEX_HTML = path.join(ROOT, "client", "index.html");
+const LOGIN_HTML = path.join(ROOT, "client", "login.html");
 const PORT = process.env.PORT || 3000;
 
 const app = express();
@@ -76,15 +77,13 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.get('/', function root(req, res) {
-  console.log("user: ", req.user);
-  var cookies = cookie.parse(req.headers.cookie);
-  var sid = cookieParser.signedCookie(cookies["session.sid"], 'secret');
-  console.log("get / cookies:", cookies);
-  console.log("get / sid:", sid);
-  sessionStore.get(sid, function (err, ss) {
-    console.log("get / session store:", err, ss);
-  });
+  if (!req.user) res.redirect('/login');
   res.sendFile(INDEX_HTML);
+});
+
+app.get('/login', function(req, res) {
+  if (req.user) res.redirect('/');
+  res.sendFile(LOGIN_HTML);
 });
 
 app.get('/logout', function(req, res){
