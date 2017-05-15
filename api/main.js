@@ -1,9 +1,6 @@
 const path = require('path');
-const express = require('express');
-const cookie = require('cookie');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
-const http = require('http');
 const _ = require('lodash');
 
 const ROOT = path.dirname(__dirname);
@@ -11,9 +8,10 @@ const INDEX_HTML = path.join(ROOT, "client", "index.html");
 const LOGIN_HTML = path.join(ROOT, "client", "login.html");
 const PORT = process.env.PORT || 3000;
 
-const app = express();
-const server = http.createServer(app);
-
+const application = require('./boot/app')();
+const app = application[0];
+const express = application[1];
+const server = application[2];
 
 console.log(`starting in ${process.env.NODE_ENV} mode`)
 
@@ -23,6 +21,8 @@ const session = require('./boot/session')();
 const sessionParser = session[0];
 const sessionStore = session[1];
 const passport = require('./boot/passport')(DB);
+
+const sessionUser = require('./lib/session-user')(sessionStore, cookieParser, DB);
 
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -59,21 +59,6 @@ app.get('/logout', function(req, res){
   req.logout();
   res.redirect('/');
 });
-
-function findUser(googleId, done) {
-  DB.getInstance(function(db) {
-    db.collection("users").findOne({ googleId: googleId }, done);
-  });
-};
-
-function sessionUser(ws, done) {
-  var cookies = cookie.parse(ws.upgradeReq.headers.cookie);
-  var sid = cookieParser.signedCookie(cookies["connect.sid"], 'secret');
-  sessionStore.get(sid, function (err, session) {
-    if (err) return done(err);
-    findUser(session.passport.user, done);
-  });
-};
 
 wss.on('connection', function connection(ws) {
   sessionUser(ws, function (err, user) {

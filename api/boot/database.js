@@ -1,9 +1,9 @@
 const MongoClient = require("mongodb").MongoClient
 
-var db = {};
+var DB = {};
 var databasePool = null;
 
-function initPool(callback) {
+DB.initPool = function initPool (callback) {
   MongoClient.connect(process.env.MONGODB_URI, function(error, db) {
     if (error) throw error;
     databasePool = db;
@@ -11,12 +11,15 @@ function initPool(callback) {
   })
 };
 
-function getInstance(callback) {
+DB.getInstance = function getInstance(callback) {
   if (databasePool) return callback(databasePool);
-  initPool(callback);
+  DB.initPool(callback);
 };
 
-db.initPool = initPool;
-db.getInstance = getInstance;
+DB.findUser = function findUser(googleId, done) {
+  DB.getInstance(function(db) {
+    db.collection("users").findOne({ googleId: googleId }, done);
+  });
+};
 
-module.exports = db;
+module.exports = DB;
