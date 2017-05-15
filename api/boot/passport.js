@@ -1,4 +1,4 @@
-module.exports = function (db) {
+module.exports = function (DB) {
   const passport = require('passport');
   const GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
 
@@ -8,7 +8,7 @@ module.exports = function (db) {
     callbackURL: `${process.env.SERVER_DOMAIN || ''}/auth/google/callback`
   };
   const GoogleStrategyCallback = function(accessToken, refreshToken, profile, done) {
-    db.getInstance(function(db) {
+    DB.getInstance(function(db) {
       db.collection("users").update(
           { googleId: profile.id },
           { $setOnInsert: { googleId: profile.id },
@@ -29,7 +29,7 @@ module.exports = function (db) {
   });
 
   passport.deserializeUser(function(user, done) {
-    db.getInstance(function(db) {
+    DB.getInstance(function(db) {
       db.collection("users").findOne({ googleId: user }, done);
     })
   });
