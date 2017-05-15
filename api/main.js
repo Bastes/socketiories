@@ -60,14 +60,26 @@ app.get('/logout', function(req, res){
   res.redirect('/');
 });
 
-wss.on('connection', function connection(ws) {
+function findUser(googleId, done) {
+  DB.getInstance(function(db) {
+    db.collection("users").findOne({ googleId: googleId }, done);
+  });
+};
+
+function sessionUser(ws, done) {
   var cookies = cookie.parse(ws.upgradeReq.headers.cookie);
   var sid = cookieParser.signedCookie(cookies["connect.sid"], 'secret');
-  sessionStore.get(sid, function (err, ss) {
-    const user = ss.passport.user;
-    console.log("user:", user);
+  sessionStore.get(sid, function (err, session) {
+    if (err) return done(err);
+    findUser(session.passport.user, done);
+  });
+};
 
-    id = "whatever";
+wss.on('connection', function connection(ws) {
+  sessionUser(ws, function (err, user) {
+    if (err) return console.log(err);
+    console.log("user:", user);
+    var id = "whatever";
     var connectionMessage = `user ${id} joined`;
     console.log(connectionMessage);
     wss.broadcastExcept(ws, connectionMessage);
