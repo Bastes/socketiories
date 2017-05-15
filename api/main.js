@@ -14,23 +14,14 @@ const PORT = process.env.PORT || 3000;
 const app = express();
 const server = http.createServer(app);
 
-const session = require('express-session');
-const redis = require('redis');
-const RedisStore = require('connect-redis')(session);
-const redisClient = redis.createClient({ url: process.env.REDISCLOUD_URL });
 
-const sessionStore = new RedisStore({ client: redisClient });
-const sessionParser = session({
-  store: sessionStore,
-  secret: 'secret',
-  resave: true,
-  saveUninitialized: true
-});
+console.log(`starting in ${process.env.NODE_ENV} mode`)
 
 const wss = require('./boot/websocket')(server);
 const DB = require('./boot/database');
-
-console.log(`starting in ${process.env.NODE_ENV} mode`)
+const session = require('./boot/session')();
+const sessionParser = session[0];
+const sessionStore = session[1];
 
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
