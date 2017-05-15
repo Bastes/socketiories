@@ -35,7 +35,7 @@ const GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
 const GoogleStrategyConfig = {
   clientID: process.env.GOOGLE_OAUTH2_CLIENT_ID,
   clientSecret: process.env.GOOGLE_OAUTH2_CLIENT_SECRET,
-  callbackURL: "/auth/google/callback"
+  callbackURL: `${process.env.SERVER_DOMAIN || ''}/auth/google/callback`
 };
 const GoogleStrategyCallback = function(accessToken, refreshToken, profile, done) {
   DB.getInstance(function(db) {
