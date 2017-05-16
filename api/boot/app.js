@@ -7,7 +7,10 @@ module.exports = function (callback) {
   const app = express();
   const server = http.createServer(app);
 
-  callback(app, express, server);
+  const wss = require('./websocket')(server);
+  const DB = require('./database');
+
+  callback(app, wss, express, DB);
 
   server.listen(PORT, function listening() {
     console.log(`listening on *:${PORT}`);

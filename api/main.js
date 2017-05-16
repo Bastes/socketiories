@@ -7,9 +7,7 @@ const ROOT = path.dirname(__dirname);
 const INDEX_HTML = path.join(ROOT, "client", "index.html");
 const LOGIN_HTML = path.join(ROOT, "client", "login.html");
 
-require('./boot/app')(function (app, express, server) {
-  const wss = require('./boot/websocket')(server);
-  const DB = require('./boot/database');
+require('./boot/app')(function (app, wss, express, DB) {
   const session = require('./boot/session')();
   const sessionParser = session[0];
   const sessionStore = session[1];
