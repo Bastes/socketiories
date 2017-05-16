@@ -7,12 +7,12 @@ const LOGIN_HTML = path.join(ROOT, "client", "login.html");
 
 require('./boot/app')(function (app, wss, DB, sessionUser) {
   app.get('/', function root(req, res) {
-    if (!req.user) res.redirect('/login');
+    if (!req.user) return res.redirect('/login');
     res.sendFile(INDEX_HTML);
   });
 
   app.get('/login', function(req, res) {
-    if (req.user) res.redirect('/');
+    if (req.user) return res.redirect('/');
     res.sendFile(LOGIN_HTML);
   });
 
