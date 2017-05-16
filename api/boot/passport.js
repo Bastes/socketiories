@@ -12,7 +12,11 @@ module.exports = function (DB) {
       db.collection("users").update(
           { googleId: profile.id },
           { $setOnInsert: { googleId: profile.id },
-            $set: { emails: profile.emails }
+            $set: {
+              displayName: profile.displayName,
+              photos: profile.photos,
+              emails: profile.emails
+            }
           },
           { upsert: true },
           function (err, maybeUser) {
@@ -28,11 +32,7 @@ module.exports = function (DB) {
     done(null, user.googleId);
   });
 
-  passport.deserializeUser(function(user, done) {
-    DB.getInstance(function(db) {
-      db.collection("users").findOne({ googleId: user }, done);
-    })
-  });
+  passport.deserializeUser(DB.findUser);
 
   return passport;
 };
