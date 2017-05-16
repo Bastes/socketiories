@@ -1,41 +1,11 @@
 const path = require('path');
-const cookieParser = require('cookie-parser');
-const bodyParser = require('body-parser');
 const _ = require('lodash');
 
 const ROOT = path.dirname(__dirname);
 const INDEX_HTML = path.join(ROOT, "client", "index.html");
 const LOGIN_HTML = path.join(ROOT, "client", "login.html");
 
-require('./boot/app')(function (app, wss, express, DB) {
-  const session = require('./boot/session')();
-  const sessionParser = session[0];
-  const sessionStore = session[1];
-  const passport = require('./boot/passport')(DB);
-
-  const sessionUser = require('./lib/session-user')(sessionStore, cookieParser, DB);
-
-  app.use(cookieParser());
-  app.use(bodyParser.urlencoded({ extended: true }));
-  app.use(sessionParser);
-
-  require('./boot/environments')(process, app, express);
-
-  app.use(passport.initialize());
-  app.use(passport.session());
-
-  app.get('/auth/google', passport.authenticate('google', {
-    session: true,
-    scope: [
-      'https://www.googleapis.com/auth/plus.login',
-      'https://www.googleapis.com/auth/plus.profile.emails.read'
-    ]
-  }));
-
-  app.get('/auth/google/callback',
-      passport.authenticate('google', { failureRedirect: '/login' }),
-      function(req, res) { res.redirect('/'); });
-
+require('./boot/app')(function (app, wss, DB, sessionUser) {
   app.get('/', function root(req, res) {
     if (!req.user) res.redirect('/login');
     res.sendFile(INDEX_HTML);
