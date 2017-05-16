@@ -24,21 +24,19 @@ require('./boot/app')(function (app, wss, DB, sessionUser) {
   wss.on('connection', function connection(ws) {
     sessionUser(ws, function (err, user) {
       if (err) return console.log(err);
-      console.log("user:", user);
-      var id = "whatever";
-      var connectionMessage = `user ${id} joined`;
+      var connectionMessage = `user ${user.displayName} joined`;
       console.log(connectionMessage);
       wss.broadcastExcept(ws, connectionMessage);
-      ws.send(`hello ${id} :)`);
+      ws.send(`hello ${user.displayName} :)`);
 
       ws.on('message', function incoming(msg) {
-        var message = `${id} says: ${msg}`;
+        var message = `${user.displayName} says: ${msg}`;
         console.log(message);
         wss.broadcastExcept(ws, message);
       });
 
       ws.on('close', function disconnection() {
-        var disconnectionMessage = `user ${id} disconnected`;
+        var disconnectionMessage = `user ${user.displayName} disconnected`;
         console.log(disconnectionMessage);
         wss.broadcastExcept(ws, disconnectionMessage);
       });
