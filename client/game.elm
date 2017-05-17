@@ -47,7 +47,7 @@ init flags =
     ( { websocketUrl = flags.websocketUrl
       , game = Nothing
       }
-    , WS.send flags.websocketUrl "game:status"
+    , WS.send flags.websocketUrl "game:join"
     )
 
 

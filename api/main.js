@@ -5,6 +5,17 @@ const ROOT = path.dirname(__dirname);
 const INDEX_HTML = path.join(ROOT, "client", "index.html");
 const LOGIN_HTML = path.join(ROOT, "client", "login.html");
 
+function Player(user) {
+  this._id = user._id;
+  this.name = user.displayName;
+};
+
+function Game() {
+  this.players = [];
+};
+
+var game = new Game();
+
 require('./boot/app')(function (app, wss, DB, sessionUser) {
   app.get('/', function root(req, res) {
     if (!req.user) return res.redirect('/login');
@@ -28,7 +39,12 @@ require('./boot/app')(function (app, wss, DB, sessionUser) {
 
       ws.on('message', function onMessage(msg) {
         if (msg == 'game:status') {
-          ws.send(JSON.stringify({ players: [ { name: ws.user.displayName } ] }))
+          ws.send(JSON.stringify(game));
+        }
+        if (msg == 'game:join') {
+          if (!_(game.players).some(function (player) { return player._id === ws.user._id; }))
+            game.players.push(new Player(ws.user));
+          ws.send(JSON.stringify(game));
         }
       });
     });
