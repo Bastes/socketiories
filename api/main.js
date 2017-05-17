@@ -6,6 +6,7 @@ const INDEX_HTML = path.join(ROOT, "client", "index.html");
 const LOGIN_HTML = path.join(ROOT, "client", "login.html");
 
 const WHISPER_MATCHER = /^\s*(.+?)\s*:\s*(.+?)\s*$/m
+const NAME_MATCHES = _.partial(_.partial, function (name, ows) { return ows.user.displayName == name; });
 
 require('./boot/app')(function (app, wss, DB, sessionUser) {
   app.get('/', function root(req, res) {
@@ -36,16 +37,17 @@ require('./boot/app')(function (app, wss, DB, sessionUser) {
         var matches = msg.match(WHISPER_MATCHER)
         if (matches) {
           var recipient = matches[1];
-          var whisper = matches[2];
-          var message = `${user.displayName} whispers: ${whisper}`;
-          console.log(`${user.displayName} whispers to ${recipient}: ${whisper}`);
-          wss.sendTo(function (ows) { return ows.user.displayName == recipient; }, message);
+          var nameMatches = NAME_MATCHES(recipient);
+          if (wss.anyOnline(nameMatches)) {
+            var whisper = matches[2];
+            var message = `${user.displayName} whispers: ${whisper}`;
+            console.log(`${user.displayName} whispers to ${recipient}: ${whisper}`);
+            return wss.sendTo(nameMatches, message);
+          }
         }
-        else {
-          var message = `${user.displayName} says: ${msg}`;
-          console.log(message);
-          wss.broadcastExcept(ws, message);
-        }
+        var message = `${user.displayName} says: ${msg}`;
+        console.log(message);
+        wss.broadcastExcept(ws, message);
       });
 
       ws.on('close', function disconnection() {

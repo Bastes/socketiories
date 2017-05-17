@@ -24,5 +24,13 @@ module.exports = function (server) {
     });
   };
 
+  wss.anyOnline = function anyOnline(filter) {
+    var result = false;
+    wss.clients.forEach(function each(client) {
+      result = result || (client.readyState === WebSocket.OPEN && filter(client));
+    });
+    return result;
+  };
+
   return wss;
 }
