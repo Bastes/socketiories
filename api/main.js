@@ -5,6 +5,8 @@ const ROOT = path.dirname(__dirname);
 const INDEX_HTML = path.join(ROOT, "client", "index.html");
 const LOGIN_HTML = path.join(ROOT, "client", "login.html");
 
+const WHISPER_MATCHER = /^\s*(.+?)\s*:\s*(.+?)\s*$/m
+
 require('./boot/app')(function (app, wss, DB, sessionUser) {
   app.get('/', function root(req, res) {
     if (!req.user) return res.redirect('/login');
@@ -24,15 +26,26 @@ require('./boot/app')(function (app, wss, DB, sessionUser) {
   wss.on('connection', function connection(ws) {
     sessionUser(ws, function (err, user) {
       if (err) return console.log(err);
+      ws.user = user;
       var connectionMessage = `user ${user.displayName} joined`;
       console.log(connectionMessage);
       wss.broadcastExcept(ws, connectionMessage);
       ws.send(`hello ${user.displayName} :)`);
 
       ws.on('message', function incoming(msg) {
-        var message = `${user.displayName} says: ${msg}`;
-        console.log(message);
-        wss.broadcastExcept(ws, message);
+        var matches = msg.match(WHISPER_MATCHER)
+        if (matches) {
+          var recipient = matches[1];
+          var whisper = matches[2];
+          var message = `${user.displayName} whispers: ${whisper}`;
+          console.log(`${user.displayName} whispers to ${recipient}: ${whisper}`);
+          wss.sendTo(function (ows) { return ows.user.displayName == recipient; }, message);
+        }
+        else {
+          var message = `${user.displayName} says: ${msg}`;
+          console.log(message);
+          wss.broadcastExcept(ws, message);
+        }
       });
 
       ws.on('close', function disconnection() {

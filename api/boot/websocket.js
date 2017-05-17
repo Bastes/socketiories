@@ -5,18 +5,23 @@ module.exports = function (server) {
 
   wss.broadcast = function broadcast(data) {
     wss.clients.forEach(function each(client) {
-      if (client.readyState === WebSocket.OPEN) {
-        client.send(data)
-      }
-    })
+      if (client.readyState !== WebSocket.OPEN) return;
+      client.send(data);
+    });
   };
 
   wss.broadcastExcept = function broadcastExcept(ws, data) {
     wss.clients.forEach(function each(client) {
-      if (client !== ws && client.readyState === WebSocket.OPEN) {
-        client.send(data)
-      }
-    })
+      if (client === ws || client.readyState !== WebSocket.OPEN) return;
+      client.send(data);
+    });
+  };
+
+  wss.sendTo = function sendTo(filter, data) {
+    wss.clients.forEach(function each(client) {
+      if (client.readyState !== WebSocket.OPEN || !filter(client)) return;
+      client.send(data);
+    });
   };
 
   return wss;
