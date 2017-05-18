@@ -1,7 +1,7 @@
 port module Game exposing (..)
 
-import Html exposing (Html, programWithFlags, div, text)
-import Html.Attributes exposing (id)
+import Html exposing (Html, programWithFlags, div, span, text)
+import Html.Attributes exposing (id, class)
 import Html.Events exposing (onClick)
 import WebSocket as WS
 import Json.Decode as D
@@ -27,7 +27,8 @@ type alias Flags =
 
 
 type alias Player =
-    { name : String
+    { id : String
+    , name : String
     }
 
 
@@ -57,6 +58,8 @@ init flags =
 
 type Msg
     = GameStatus (Maybe Game)
+    | Kick Player
+    | Join
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -64,6 +67,12 @@ update msg model =
     case msg of
         GameStatus game ->
             ( { model | game = game }, Cmd.none )
+
+        Kick player ->
+            ( model, WS.send model.websocketUrl ("game:kick:" ++ player.id) )
+
+        Join ->
+            ( model, WS.send model.websocketUrl ("game:join") )
 
 
 
@@ -76,7 +85,7 @@ subscriptions model =
 
 
 playerDecoder =
-    D.map Player (D.field "name" D.string)
+    D.map2 Player (D.field "id" D.string) (D.field "name" D.string)
 
 
 gameDecoder =
@@ -115,12 +124,34 @@ view model =
 
                 Nothing ->
                     []
+
+        join =
+            case model.game of
+                Just game ->
+                    [ span
+                        [ class "join", onClick Join ]
+                        [ text "join" ]
+                    ]
+
+                Nothing ->
+                    []
     in
         div
             [ id "game" ]
-            players
+            [ div
+                [ id "players" ]
+                (players ++ join)
+            ]
 
 
 playerView : Player -> Html Msg
 playerView player =
-    div [] [ text player.name ]
+    div
+        [ class "player" ]
+        [ span
+            [ class "name" ]
+            [ text player.name ]
+        , span
+            [ class "kick", onClick (Kick player) ]
+            [ text "X" ]
+        ]

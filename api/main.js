@@ -6,7 +6,7 @@ const INDEX_HTML = path.join(ROOT, "client", "index.html");
 const LOGIN_HTML = path.join(ROOT, "client", "login.html");
 
 function Player(user) {
-  this._id = user._id;
+  this.id = user.googleId;
   this.name = user.displayName;
 };
 
@@ -38,12 +38,21 @@ require('./boot/app')(function (app, wss, DB, sessionUser) {
       ws.user = user;
 
       ws.on('message', function onMessage(msg) {
+        console.log('message:', msg);
         if (msg == 'game:status') {
           ws.send(JSON.stringify(game));
         }
         if (msg == 'game:join') {
-          if (!_(game.players).some(function (player) { return player._id === ws.user._id; }))
+          if (!_(game.players).some(function (player) { return player.id === ws.user.googleId; }))
             game.players.push(new Player(ws.user));
+          ws.send(JSON.stringify(game));
+        }
+        var kickPattern = /^game:kick:(.+)$/;
+        var kickMatch = msg.match(kickPattern);
+        if (kickMatch) {
+          var kickId = kickMatch[1];
+          if (_(game.players).some(function (player) { return player.id === kickId; }))
+            game.players = _.filter(game.players, function (player) { return player.id !== kickId; });
           ws.send(JSON.stringify(game));
         }
       });
