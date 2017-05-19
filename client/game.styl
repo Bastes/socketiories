@@ -18,7 +18,7 @@ body
   #players
     display: flex
     flex-direction: column
-    width: 20%
+    width: 50%
     font-size: 20px
     player-height = 28px
     .player,
@@ -30,8 +30,34 @@ body
       flex-direction: row
       .name
         flex-grow: 1
+        padding: 0 5px
+      .cards
+        height: player-height
+        display: flex
+        flex-direction: row
+        .stack
+          height: player-height
+          display: flex
+          flex-direction: row
+          align-items: center
+          padding: 0 5px
+          &.hand
+            background: #0b0
+          &.pile
+            background: #bb0
+          &.lost
+            background: #b00
+          .card
+            card-height = player-height - 5px
+            height: card-height
+            width: card-height
+            border-radius: 50%
+            &.flower
+              background-color: white
+            &.skull
+              background-color: black
       .kick
-        display: inline-block
+        display: block
         width: player-height
         height: player-height
         background: red

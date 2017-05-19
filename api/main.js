@@ -8,6 +8,12 @@ const LOGIN_HTML = path.join(ROOT, "client", "login.html");
 function Player(user) {
   this.id = user.googleId;
   this.name = user.displayName;
+  this.bets = 0;
+  this.cards =
+  { hand: _.shuffle("FFFS".split('')).join('')
+  , pile: ""
+  , lost: ""
+  };
 };
 
 function Game() {
