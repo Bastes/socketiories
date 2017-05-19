@@ -37,7 +37,7 @@ module.exports = function (app, DB) {
   passport.use(new GoogleStrategy(GoogleStrategyConfig, GoogleStrategyCallback));
 
   passport.serializeUser(function(user, done) {
-    done(null, user.googleId);
+    done(null, user._id);
   });
 
   passport.deserializeUser(DB.findUser);

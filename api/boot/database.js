@@ -1,4 +1,5 @@
-const MongoClient = require("mongodb").MongoClient
+const mongo = require("mongodb");
+const MongoClient = mongo.MongoClient;
 
 var DB = {};
 var databasePool = null;
@@ -16,9 +17,9 @@ DB.getInstance = function getInstance(callback) {
   DB.initPool(callback);
 };
 
-DB.findUser = function findUser(googleId, done) {
+DB.findUser = function findUser(id, done) {
   DB.getInstance(function(db) {
-    db.collection("users").findOne({ googleId: googleId }, done);
+    db.collection("users").findOne({ "_id": new mongo.ObjectID(id) }, done);
   });
 };
 

@@ -6,7 +6,7 @@ const INDEX_HTML = path.join(ROOT, "client", "index.html");
 const LOGIN_HTML = path.join(ROOT, "client", "login.html");
 
 function Player(user) {
-  this.id = user.googleId;
+  this.id = user._id.toString();
   this.name = user.displayName;
   this.bets = 0;
   this.cards =
@@ -49,7 +49,8 @@ require('./boot/app')(function (app, wss, DB, sessionUser) {
           ws.send(JSON.stringify(game));
         }
         if (msg == 'game:join') {
-          if (!_(game.players).some(function (player) { return player.id === ws.user.googleId; }))
+          var myId = ws.user._id.toString();
+          if (!_(game.players).some(function (player) { return player.id === myId; }))
             game.players.push(new Player(ws.user));
           ws.send(JSON.stringify(game));
         }
