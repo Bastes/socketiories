@@ -52,7 +52,9 @@ require('./boot/app')(function (app, wss, DB, sessionUser) {
           var myId = ws.user._id.toString();
           if (!_(game.players).some(function (player) { return player.id === myId; }))
             game.players.push(new Player(ws.user));
-          ws.send(JSON.stringify(game));
+          var gameJSON = JSON.stringify(game);
+          ws.send(gameJSON);
+          wss.broadcastExcept(ws, gameJSON);
         }
         var kickPattern = /^game:kick:(.+)$/;
         var kickMatch = msg.match(kickPattern);
@@ -60,7 +62,8 @@ require('./boot/app')(function (app, wss, DB, sessionUser) {
           var kickId = kickMatch[1];
           if (_(game.players).some(function (player) { return player.id === kickId; }))
             game.players = _.filter(game.players, function (player) { return player.id !== kickId; });
-          ws.send(JSON.stringify(game));
+          var gameJSON = JSON.stringify(game);
+          wss.broadcast(gameJSON);
         }
       });
     });
