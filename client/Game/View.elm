@@ -71,5 +71,8 @@ cardView card =
 
                 Skull ->
                     "skull"
+
+                Hidden ->
+                    "hidden"
     in
         span [ class <| "card " ++ cardClass ] []

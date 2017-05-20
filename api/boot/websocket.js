@@ -10,6 +10,13 @@ module.exports = function (server) {
     });
   };
 
+  wss.broadcastWithStencil = function broadcastWithStencil(stencil) {
+    wss.clients.forEach(function each(client) {
+      if (client.readyState !== WebSocket.OPEN) return;
+      client.send(stencil(client));
+    });
+  };
+
   wss.broadcastExcept = function broadcastExcept(ws, data) {
     wss.clients.forEach(function each(client) {
       if (client === ws || client.readyState !== WebSocket.OPEN) return;

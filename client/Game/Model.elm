@@ -9,6 +9,7 @@ type alias Flags =
 type Card
     = Flower
     | Skull
+    | Hidden
 
 
 type alias Cards =

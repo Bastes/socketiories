@@ -13,6 +13,9 @@ card char =
         'S' ->
             Ok Skull
 
+        'H' ->
+            Ok Hidden
+
         c ->
             Err <| "'" ++ (String.fromList [ c ]) ++ "' cannot be cast into a Card"
 

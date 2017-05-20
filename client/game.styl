@@ -1,3 +1,9 @@
+@keyframes slip-in
+  0%
+    transform: translateX(-100%)
+  100%
+    transform: translateX(0%)
+
 *
   margin: 0
   padding: 0
@@ -26,6 +32,7 @@ body
       height: player-height
       line-height: player-height
     .player
+      animation: slip-in 0.3s
       display: flex
       flex-direction: row
       .name
@@ -56,6 +63,8 @@ body
               background-color: white
             &.skull
               background-color: black
+            &.hidden
+              background-color: grey
       .kick
         display: block
         width: player-height

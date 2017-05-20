@@ -5,22 +5,12 @@ const ROOT = path.dirname(__dirname);
 const INDEX_HTML = path.join(ROOT, "client", "index.html");
 const LOGIN_HTML = path.join(ROOT, "client", "login.html");
 
-function Player(user) {
-  this.id = user._id.toString();
-  this.name = user.displayName;
-  this.bets = 0;
-  this.cards =
-  { hand: _.shuffle("FFFS".split('')).join('')
-  , pile: ""
-  , lost: ""
-  };
-};
-
-function Game() {
-  this.players = [];
-};
+const Game = require('./model/game');
+const Player = require('./model/player');
 
 var game = new Game();
+
+function idify(user) { return user._id.toString(); };
 
 require('./boot/app')(function (app, wss, DB, sessionUser) {
   app.get('/', function root(req, res) {
@@ -46,15 +36,15 @@ require('./boot/app')(function (app, wss, DB, sessionUser) {
       ws.on('message', function onMessage(msg) {
         console.log('message:', msg);
         if (msg == 'game:status') {
-          ws.send(JSON.stringify(game));
+          ws.send(JSON.stringify(game.playerPOV(idify(user._id))));
         }
         if (msg == 'game:join') {
-          var myId = ws.user._id.toString();
+          var myId = idify(ws.user);
           if (!_(game.players).some(function (player) { return player.id === myId; }))
-            game.players.push(new Player(ws.user));
-          var gameJSON = JSON.stringify(game);
-          ws.send(gameJSON);
-          wss.broadcastExcept(ws, gameJSON);
+            game.players.push(new Player(idify(ws.user), user.displayName));
+          wss.broadcastWithStencil(function (client) {
+            return JSON.stringify(game.playerPOV(idify(client.user)));
+          });
         }
         var kickPattern = /^game:kick:(.+)$/;
         var kickMatch = msg.match(kickPattern);
@@ -62,8 +52,9 @@ require('./boot/app')(function (app, wss, DB, sessionUser) {
           var kickId = kickMatch[1];
           if (_(game.players).some(function (player) { return player.id === kickId; }))
             game.players = _.filter(game.players, function (player) { return player.id !== kickId; });
-          var gameJSON = JSON.stringify(game);
-          wss.broadcast(gameJSON);
+          wss.broadcastWithStencil(function (client) {
+            return JSON.stringify(game.playerPOV(idify(client.user)));
+          });
         }
       });
     });
