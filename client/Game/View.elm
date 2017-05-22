@@ -3,8 +3,8 @@ module Game.View exposing (view)
 import Html exposing (Html, div, span, text)
 import Html.Attributes exposing (id, class)
 import Html.Events exposing (onClick)
-import Maybe exposing (andThen, withDefault)
-import Game.Model exposing (Model, Game, Player, Card(..))
+import Maybe exposing (andThen, map, withDefault)
+import Game.Model exposing (Model, Game, PlayerId, Player, Card(..))
 import Game.Update exposing (Msg(..))
 
 
@@ -14,7 +14,7 @@ view model =
         players =
             case model.game of
                 Just game ->
-                    List.map playerView game.players
+                    List.map (playerView model.playerId) game.players
 
                 Nothing ->
                     []
@@ -53,32 +53,38 @@ joinButton model =
             ]
 
 
-playerView : Player -> Html Msg
-playerView player =
-    div
-        [ class "player" ]
-        [ span
-            [ class "name" ]
-            [ text player.name ]
-        , div
-            [ class "cards" ]
-            [ stackView "pile" player.cards.pile
-            , stackView "hand" player.cards.hand
-            , stackView "lost" player.cards.lost
+playerView : Maybe PlayerId -> Player -> Html Msg
+playerView maybePlayerId player =
+    let
+        isCurrentPlayer =
+            maybePlayerId
+                |> map ((==) player.id)
+                |> withDefault False
+    in
+        div
+            [ class "player" ]
+            [ span
+                [ class "name" ]
+                [ text player.name ]
+            , div
+                [ class "cards" ]
+                [ stackView "pile" False player.cards.pile
+                , stackView "hand" isCurrentPlayer player.cards.hand
+                , stackView "lost" False player.cards.lost
+                ]
+            , span
+                [ class "kick", onClick (Kick player) ]
+                [ text "X" ]
             ]
-        , span
-            [ class "kick", onClick (Kick player) ]
-            [ text "X" ]
-        ]
 
 
-stackView : String -> List Card -> Html Msg
-stackView name cards =
-    div [ class ("stack " ++ name) ] <| List.map cardView cards
+stackView : String -> Bool -> List Card -> Html Msg
+stackView name actions cards =
+    div [ class ("stack " ++ name) ] <| List.map (cardView actions) cards
 
 
-cardView : Card -> Html Msg
-cardView card =
+cardView : Bool -> Card -> Html Msg
+cardView actions card =
     let
         cardClass =
             case card of
@@ -90,5 +96,13 @@ cardView card =
 
                 Hidden ->
                     "hidden"
+
+        actionOnClick =
+            case actions of
+                True ->
+                    [ onClick (Play card) ]
+
+                False ->
+                    []
     in
-        span [ class <| "card " ++ cardClass ] []
+        span (actionOnClick ++ [ class <| "card " ++ cardClass ]) []

@@ -1,4 +1,4 @@
-module Game.Model exposing (Flags, Card(..), Cards, Player, Game, Model)
+module Game.Model exposing (Flags, Card(..), Cards, PlayerId, Player, Game, Model, cardLetter)
 
 
 type alias Flags =
@@ -19,8 +19,12 @@ type alias Cards =
     }
 
 
+type alias PlayerId =
+    String
+
+
 type alias Player =
-    { id : String
+    { id : PlayerId
     , name : String
     , bets : Int
     , cards : Cards
@@ -35,5 +39,18 @@ type alias Game =
 type alias Model =
     { websocketUrl : String
     , game : Maybe Game
-    , playerId : Maybe String
+    , playerId : Maybe PlayerId
     }
+
+
+cardLetter : Card -> String
+cardLetter card =
+    case card of
+        Flower ->
+            "F"
+
+        Skull ->
+            "S"
+
+        Hidden ->
+            "?"

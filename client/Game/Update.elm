@@ -2,16 +2,17 @@ module Game.Update exposing (Msg(..), init, update, subscriptions)
 
 import Html
 import WebSocket as WS
-import Game.Model exposing (Flags, Model, Game, Player)
+import Game.Model exposing (Flags, Model, Game, PlayerId, Player, Card, cardLetter)
 import Game.Decoder exposing (decodeGame, decodePlayerId)
 
 
 type Msg
     = GameStatus Game
-    | PlayerId String
+    | CurrentPlayerId PlayerId
+    | DecodingError String
     | Kick Player
     | Join
-    | DecodingError String
+    | Play Card
 
 
 
@@ -38,8 +39,11 @@ update msg model =
         GameStatus game ->
             ( { model | game = Just game }, Cmd.none )
 
-        PlayerId id ->
+        CurrentPlayerId id ->
             ( { model | playerId = Just id }, Cmd.none )
+
+        DecodingError string ->
+            always ( model, Cmd.none ) (Debug.log "decoding error:" string)
 
         Kick player ->
             ( model, WS.send model.websocketUrl ("game:kick:" ++ player.id) )
@@ -47,8 +51,8 @@ update msg model =
         Join ->
             ( model, WS.send model.websocketUrl ("game:join") )
 
-        DecodingError string ->
-            always ( model, Cmd.none ) (Debug.log "decoding error:" string)
+        Play card ->
+            ( model, WS.send model.websocketUrl ("game:play:" ++ (cardLetter card)) )
 
 
 
@@ -106,7 +110,7 @@ playerId json =
     in
         case playerIdDecoded of
             Ok id ->
-                PlayerId id
+                CurrentPlayerId id
 
             Err msg ->
                 DecodingError msg

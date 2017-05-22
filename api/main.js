@@ -56,6 +56,12 @@ require('./boot/app')(function (app, wss, DB, sessionUser) {
           game.removePlayer(kickMatch[1]);
           wss.broadcastWithStencil(clientPOV);
         }
+        var playPattern = /^game:play:([FS])$/;
+        var playMatch = msg.match(playPattern);
+        if (playMatch) {
+          game.play(idify(user), playMatch[1]);
+          wss.broadcastWithStencil(clientPOV);
+        }
       });
     });
   });

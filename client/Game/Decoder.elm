@@ -13,7 +13,7 @@ card char =
         'S' ->
             Ok Skull
 
-        'H' ->
+        '?' ->
             Ok Hidden
 
         c ->
