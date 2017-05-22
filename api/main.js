@@ -39,9 +39,7 @@ require('./boot/app')(function (app, wss, DB, sessionUser) {
           ws.send(JSON.stringify(game.playerPOV(idify(user._id))));
         }
         if (msg == 'game:join') {
-          var myId = idify(ws.user);
-          if (!_(game.players).some(function (player) { return player.id === myId; }))
-            game.players.push(new Player(idify(ws.user), user.displayName));
+          game.addPlayer(new Player(idify(user), user.displayName));
           wss.broadcastWithStencil(function (client) {
             return JSON.stringify(game.playerPOV(idify(client.user)));
           });
@@ -49,9 +47,7 @@ require('./boot/app')(function (app, wss, DB, sessionUser) {
         var kickPattern = /^game:kick:(.+)$/;
         var kickMatch = msg.match(kickPattern);
         if (kickMatch) {
-          var kickId = kickMatch[1];
-          if (_(game.players).some(function (player) { return player.id === kickId; }))
-            game.players = _.filter(game.players, function (player) { return player.id !== kickId; });
+          game.removePlayer(kickMatch[1]);
           wss.broadcastWithStencil(function (client) {
             return JSON.stringify(game.playerPOV(idify(client.user)));
           });
