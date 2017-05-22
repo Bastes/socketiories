@@ -12,6 +12,14 @@ var game = new Game();
 
 function idify(user) { return user._id.toString(); };
 
+function userPOV(user) {
+  return JSON.stringify(game.playerPOV(idify(user)));
+};
+
+function clientPOV(client) {
+  return userPOV(client.user);
+};
+
 require('./boot/app')(function (app, wss, DB, sessionUser) {
   app.get('/', function root(req, res) {
     if (!req.user) return res.redirect('/login');
@@ -35,22 +43,17 @@ require('./boot/app')(function (app, wss, DB, sessionUser) {
 
       ws.on('message', function onMessage(msg) {
         console.log('message:', msg);
-        if (msg == 'game:status') {
-          ws.send(JSON.stringify(game.playerPOV(idify(user._id))));
-        }
+        if (msg == 'game:status')
+          ws.send(userPOV(user));
         if (msg == 'game:join') {
           game.addPlayer(new Player(idify(user), user.displayName));
-          wss.broadcastWithStencil(function (client) {
-            return JSON.stringify(game.playerPOV(idify(client.user)));
-          });
+          wss.broadcastWithStencil(clientPOV);
         }
         var kickPattern = /^game:kick:(.+)$/;
         var kickMatch = msg.match(kickPattern);
         if (kickMatch) {
           game.removePlayer(kickMatch[1]);
-          wss.broadcastWithStencil(function (client) {
-            return JSON.stringify(game.playerPOV(idify(client.user)));
-          });
+          wss.broadcastWithStencil(clientPOV);
         }
       });
     });
