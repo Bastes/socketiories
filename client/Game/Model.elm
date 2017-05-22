@@ -35,4 +35,5 @@ type alias Game =
 type alias Model =
     { websocketUrl : String
     , game : Maybe Game
+    , playerId : Maybe String
     }

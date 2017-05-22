@@ -3,6 +3,7 @@ module Game.View exposing (view)
 import Html exposing (Html, div, span, text)
 import Html.Attributes exposing (id, class)
 import Html.Events exposing (onClick)
+import Maybe exposing (andThen, withDefault)
 import Game.Model exposing (Model, Game, Player, Card(..))
 import Game.Update exposing (Msg(..))
 
@@ -19,21 +20,36 @@ view model =
                     []
 
         join =
-            case model.game of
-                Just game ->
-                    [ span
-                        [ class "join", onClick Join ]
-                        [ text "join" ]
-                    ]
-
-                Nothing ->
-                    []
+            joinButton model
     in
         div
             [ id "game" ]
             [ div
                 [ id "players" ]
                 (players ++ join)
+            ]
+
+
+joinButton : Model -> List (Html Msg)
+joinButton model =
+    let
+        playerId =
+            model.playerId |> withDefault ""
+
+        players =
+            model.game
+                |> andThen (Just << .players)
+                |> withDefault []
+
+        alreadyJoined =
+            players |> List.any (.id >> ((==) playerId))
+    in
+        if alreadyJoined then
+            []
+        else
+            [ span
+                [ class "join", onClick Join ]
+                [ text "join" ]
             ]
 
 

@@ -1,4 +1,4 @@
-module Game.Decoder exposing (decodeGame)
+module Game.Decoder exposing (decodeGame, decodePlayerId)
 
 import Json.Decode exposing (..)
 import Game.Model exposing (Card(..), Cards, Player, Game)
@@ -93,3 +93,8 @@ gameDecoder =
 decodeGame : String -> Result String Game
 decodeGame =
     decodeString gameDecoder
+
+
+decodePlayerId : String -> Result String String
+decodePlayerId =
+    decodeString (field "id" string)

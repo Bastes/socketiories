@@ -47,6 +47,7 @@ require('./boot/app')(function (app, wss, DB, sessionUser) {
           ws.send(userPOV(user));
         if (msg == 'game:join') {
           game.addPlayer(new Player(idify(user), user.displayName));
+          ws.send(JSON.stringify({ id: idify(user) }));
           wss.broadcastWithStencil(clientPOV);
         }
         var kickPattern = /^game:kick:(.+)$/;
