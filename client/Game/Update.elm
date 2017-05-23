@@ -2,6 +2,7 @@ module Game.Update exposing (Msg(..), init, update, subscriptions)
 
 import Html
 import WebSocket as WS
+import Game.Bid exposing (Bid(..), map)
 import Game.Model exposing (Flags, Model, Game, PlayerId, Player, Card, cardLetter)
 import Game.Decoder exposing (decodeGame, decodePlayerId)
 
@@ -13,6 +14,9 @@ type Msg
     | Kick Player
     | Join
     | Play Card
+    | LowerBid
+    | RaiseBid
+    | PlaceBid Int
 
 
 
@@ -35,24 +39,66 @@ init flags =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case msg of
-        GameStatus game ->
-            ( { model | game = Just game }, Cmd.none )
+    let
+        maybePlayer =
+            model.game
+                |> Maybe.andThen (Just << .players)
+    in
+        case msg of
+            GameStatus game ->
+                ( { model | game = Just game }, Cmd.none )
 
-        CurrentPlayerId id ->
-            ( { model | playerId = Just id }, Cmd.none )
+            CurrentPlayerId id ->
+                ( { model | playerId = Just id }, Cmd.none )
 
-        DecodingError string ->
-            always ( model, Cmd.none ) (Debug.log "decoding error:" string)
+            DecodingError string ->
+                always ( model, Cmd.none ) (Debug.log "decoding error:" string)
 
-        Kick player ->
-            ( model, WS.send model.websocketUrl ("game:kick:" ++ player.id) )
+            Kick player ->
+                ( model, WS.send model.websocketUrl ("game:kick:" ++ player.id) )
 
-        Join ->
-            ( model, WS.send model.websocketUrl ("game:join") )
+            Join ->
+                ( model, WS.send model.websocketUrl ("game:join") )
 
-        Play card ->
-            ( model, WS.send model.websocketUrl ("game:play:" ++ (cardLetter card)) )
+            Play card ->
+                ( model, WS.send model.websocketUrl ("game:play:" ++ (cardLetter card)) )
+
+            LowerBid ->
+                ( { model | game = model |> changeBid (map (\i -> i - 1)) }, Cmd.none )
+
+            RaiseBid ->
+                ( { model | game = model |> changeBid (map (\i -> i + 1)) }, Cmd.none )
+
+            PlaceBid bid ->
+                ( model, WS.send model.websocketUrl ("game:bid:" ++ (toString bid)) )
+
+
+changeBid : (Bid -> Bid) -> Model -> Maybe Game
+changeBid change model =
+    let
+        updateBid : (Bid -> Bid) -> Player -> Player
+        updateBid update player =
+            { player | bid = update player.bid }
+
+        updatePlayer : (Player -> Bool) -> (Player -> Player) -> Player -> Player
+        updatePlayer condition update player =
+            if (condition player) then
+                update player
+            else
+                player
+
+        updateOnePlayer : (PlayerId -> Player -> Bool) -> (Player -> Player) -> PlayerId -> Game -> Game
+        updateOnePlayer condition update playerId game =
+            { game
+                | players =
+                    game.players
+                        |> List.map (updatePlayer (condition playerId) update)
+            }
+    in
+        Maybe.map2
+            (updateOnePlayer (flip (.id >> (==))) (updateBid change))
+            model.playerId
+            model.game
 
 
 

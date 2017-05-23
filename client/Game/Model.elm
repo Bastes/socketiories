@@ -1,5 +1,7 @@
 module Game.Model exposing (Flags, Card(..), Cards, PlayerId, Player, Game, Model, cardLetter)
 
+import Game.Bid exposing (Bid)
+
 
 type alias Flags =
     { websocketUrl : String
@@ -28,6 +30,7 @@ type alias Player =
     , name : String
     , bets : Int
     , cards : Cards
+    , bid : Bid
     }
 
 

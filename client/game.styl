@@ -65,6 +65,20 @@ body
               background-color: black
             &.hidden
               background-color: grey
+      .bid
+        display: flex
+        flex-direction: row
+        width: 4 * player-height
+        > *
+          display: block
+          height: player-height
+          text-align: center
+          width: player-height
+        .decrease,
+        .increase,
+        .place
+          cursor: pointer
+          user-select: none
       .kick
         display: block
         width: player-height

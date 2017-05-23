@@ -4,6 +4,7 @@ import Html exposing (Html, div, span, text)
 import Html.Attributes exposing (id, class)
 import Html.Events exposing (onClick)
 import Maybe exposing (andThen, map, map2, withDefault)
+import Game.Bid exposing (Bid(..))
 import Game.Model exposing (Model, Game, PlayerId, Player, Card(..))
 import Game.Update exposing (Msg(..))
 
@@ -16,12 +17,12 @@ view model =
                 |> andThen (.players >> List.head)
                 |> map (.id)
 
-        isCurrentPlayer =
+        isPlaying =
             map2 (==) maybeFirstPlayerId model.playerId
                 |> withDefault False
 
         playersViews =
-            map (.players >> List.map (playerView isCurrentPlayer)) model.game
+            map (.players >> List.map (playerView model.playerId isPlaying)) model.game
                 |> withDefault []
 
         join =
@@ -58,23 +59,64 @@ joinButton model =
             ]
 
 
-playerView : Bool -> Player -> Html Msg
-playerView isCurrentPlayer player =
-    div
-        [ class "player" ]
-        [ span
-            [ class "name" ]
-            [ text player.name ]
-        , div
-            [ class "cards" ]
-            [ stackView "pile" False player.cards.pile
-            , stackView "hand" isCurrentPlayer player.cards.hand
-            , stackView "lost" False player.cards.lost
+playerView : Maybe PlayerId -> Bool -> Player -> Html Msg
+playerView maybePlayerId isPlaying player =
+    let
+        isCurrentPlayer =
+            map ((==) player.id) maybePlayerId
+                |> withDefault False
+    in
+        div
+            [ class "player" ]
+            [ span
+                [ class "name" ]
+                [ text player.name ]
+            , div
+                [ class "cards" ]
+                [ stackView "pile" False player.cards.pile
+                , stackView "hand" isPlaying player.cards.hand
+                , stackView "lost" False player.cards.lost
+                ]
+            , bidView (isCurrentPlayer && isPlaying) player.bid
+            , span
+                [ class "kick", onClick (Kick player) ]
+                [ text "X" ]
             ]
-        , span
-            [ class "kick", onClick (Kick player) ]
-            [ text "X" ]
-        ]
+
+
+foldBid : Html Msg
+foldBid =
+    span [ class "bid fold" ] []
+
+
+bidControls : Bool -> String -> Int -> Html Msg
+bidControls withControls bidClass value =
+    let
+        controls =
+            if withControls then
+                [ span [ class "decrease", onClick LowerBid ] [ text "-" ]
+                , span [ class "increase", onClick RaiseBid ] [ text "+" ]
+                , span [ class "place", onClick (PlaceBid value) ] [ text ">" ]
+                ]
+            else
+                []
+    in
+        span
+            [ class ("bid " ++ bidClass) ]
+            ((span [ class "value" ] [ text (toString value) ]) :: controls)
+
+
+bidView : Bool -> Bid -> Html Msg
+bidView withControls bid =
+    case bid of
+        None ->
+            bidControls withControls "none" 0
+
+        Bid value ->
+            bidControls withControls "bid" value
+
+        Fold ->
+            foldBid
 
 
 stackView : String -> Bool -> List Card -> Html Msg

@@ -1,6 +1,7 @@
 module Game.Decoder exposing (decodeGame, decodePlayerId)
 
 import Json.Decode exposing (..)
+import Game.Bid exposing (Bid(..))
 import Game.Model exposing (Card(..), Cards, Player, Game)
 
 
@@ -67,6 +68,11 @@ cardListDecoder =
     string |> andThen cardList
 
 
+bid : Decoder Bid
+bid =
+    succeed None
+
+
 playerDecoder : Decoder Player
 playerDecoder =
     let
@@ -77,12 +83,13 @@ playerDecoder =
                 (field "pile" cardListDecoder)
                 (field "lost" cardListDecoder)
     in
-        map4
+        map5
             Player
             (field "id" string)
             (field "name" string)
             (field "bets" int)
             (field "cards" cards)
+            (field "bid" bid)
 
 
 gameDecoder : Decoder Game

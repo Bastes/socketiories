@@ -30,6 +30,7 @@ Player.prototype.playerPOV = function playerPOV(playerId) {
     .chain(this)
     .cloneDeep()
     .assign({ cards: _.mapValues(this.cards, cardsView) })
+    .assign({ bid: "none" })
     .value();
 };
 
