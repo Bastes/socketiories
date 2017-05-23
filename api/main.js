@@ -44,24 +44,25 @@ require('./boot/app')(function (app, wss, DB, sessionUser) {
       ws.on('message', function onMessage(msg) {
         console.log('message:', msg);
         if (msg == 'game:status')
-          ws.send(userPOV(user));
+          return ws.send(userPOV(user));
         if (msg == 'game:join') {
           game.addPlayer(new Player(idify(user), user.displayName));
           ws.send(JSON.stringify({ id: idify(user) }));
-          wss.broadcastWithStencil(clientPOV);
+          return wss.broadcastWithStencil(clientPOV);
         }
         var kickPattern = /^game:kick:(.+)$/;
         var kickMatch = msg.match(kickPattern);
         if (kickMatch) {
           game.removePlayer(kickMatch[1]);
-          wss.broadcastWithStencil(clientPOV);
+          return wss.broadcastWithStencil(clientPOV);
         }
         var playPattern = /^game:play:([FS])$/;
         var playMatch = msg.match(playPattern);
         if (playMatch) {
           game.play(idify(user), playMatch[1]);
-          wss.broadcastWithStencil(clientPOV);
+          return wss.broadcastWithStencil(clientPOV);
         }
+        return console.log("invalid message:", msg);
       });
     });
   });
