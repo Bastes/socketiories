@@ -3,7 +3,7 @@ module Game.View exposing (view)
 import Html exposing (Html, div, span, text)
 import Html.Attributes exposing (id, class)
 import Html.Events exposing (onClick)
-import Maybe exposing (andThen, map, withDefault)
+import Maybe exposing (andThen, map, map2, withDefault)
 import Game.Model exposing (Model, Game, PlayerId, Player, Card(..))
 import Game.Update exposing (Msg(..))
 
@@ -11,13 +11,18 @@ import Game.Update exposing (Msg(..))
 view : Model -> Html Msg
 view model =
     let
-        players =
-            case model.game of
-                Just game ->
-                    List.map (playerView model.playerId) game.players
+        maybeFirstPlayerId =
+            model.game
+                |> andThen (.players >> List.head)
+                |> map (.id)
 
-                Nothing ->
-                    []
+        isCurrentPlayer =
+            map2 (==) maybeFirstPlayerId model.playerId
+                |> withDefault False
+
+        playersViews =
+            map (.players >> List.map (playerView isCurrentPlayer)) model.game
+                |> withDefault []
 
         join =
             joinButton model
@@ -26,7 +31,7 @@ view model =
             [ id "game" ]
             [ div
                 [ id "players" ]
-                (players ++ join)
+                (playersViews ++ join)
             ]
 
 
@@ -38,7 +43,7 @@ joinButton model =
 
         players =
             model.game
-                |> andThen (Just << .players)
+                |> map .players
                 |> withDefault []
 
         alreadyJoined =
@@ -53,29 +58,23 @@ joinButton model =
             ]
 
 
-playerView : Maybe PlayerId -> Player -> Html Msg
-playerView maybePlayerId player =
-    let
-        isCurrentPlayer =
-            maybePlayerId
-                |> map ((==) player.id)
-                |> withDefault False
-    in
-        div
-            [ class "player" ]
-            [ span
-                [ class "name" ]
-                [ text player.name ]
-            , div
-                [ class "cards" ]
-                [ stackView "pile" False player.cards.pile
-                , stackView "hand" isCurrentPlayer player.cards.hand
-                , stackView "lost" False player.cards.lost
-                ]
-            , span
-                [ class "kick", onClick (Kick player) ]
-                [ text "X" ]
+playerView : Bool -> Player -> Html Msg
+playerView isCurrentPlayer player =
+    div
+        [ class "player" ]
+        [ span
+            [ class "name" ]
+            [ text player.name ]
+        , div
+            [ class "cards" ]
+            [ stackView "pile" False player.cards.pile
+            , stackView "hand" isCurrentPlayer player.cards.hand
+            , stackView "lost" False player.cards.lost
             ]
+        , span
+            [ class "kick", onClick (Kick player) ]
+            [ text "X" ]
+        ]
 
 
 stackView : String -> Bool -> List Card -> Html Msg
