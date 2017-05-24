@@ -25,6 +25,7 @@ Game.prototype.removePlayer = function removePlayer(id) {
 Game.prototype.play = function play(id, card) {
   var currentPlayer = this.players[0];
   if (currentPlayer.id != id) return;
+  if (this.biddingStarted()) return;
   if (! currentPlayer.play(card)) return;
   this.players.push(this.players.shift());
   return true;
@@ -38,6 +39,10 @@ Game.prototype.placeBid = function placeBid(id, bid) {
   if (! currentPlayer.placeBid(bid)) return;
   this.players.push(this.players.shift());
   return true;
+};
+
+Game.prototype.biddingStarted = function biddingStarted() {
+  return _.some(this.players, function (player) { return player.isBidding(); });
 };
 
 Game.prototype.anyBetterBid = function anyBetterBid(bid) {

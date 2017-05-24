@@ -31,6 +31,10 @@ Player.prototype.placeBid = function placeBid(bid) {
   return true;
 };
 
+Player.prototype.isBidding = function isBidding() {
+  return _.isInteger(this.bid) && this.bid != 0;
+};
+
 Player.prototype.playerPOV = function playerPOV(playerId) {
   var cardsView = this.id === playerId ? displayCards : obfuscateCards;
   return _
