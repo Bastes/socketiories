@@ -62,6 +62,12 @@ require('./boot/app')(function (app, wss, DB, sessionUser) {
           game.play(idify(user), playMatch[1]);
           return wss.broadcastWithStencil(clientPOV);
         }
+        var bidPattern = /^game:bid:(\d+)$/;
+        var bidMatch = msg.match(bidPattern);
+        if (bidMatch) {
+          game.placeBid(idify(user), _.parseInt(bidMatch[1]));
+          return wss.broadcastWithStencil(clientPOV);
+        }
         return console.log("invalid message:", msg);
       });
     });

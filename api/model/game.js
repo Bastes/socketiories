@@ -24,10 +24,33 @@ Game.prototype.removePlayer = function removePlayer(id) {
 
 Game.prototype.play = function play(id, card) {
   var currentPlayer = this.players[0];
-  if (currentPlayer.id != id || (! currentPlayer.play(card)))
-    return;
+  if (currentPlayer.id != id) return;
+  if (! currentPlayer.play(card)) return;
   this.players.push(this.players.shift());
   return true;
+};
+
+Game.prototype.placeBid = function placeBid(id, bid) {
+  var currentPlayer = this.players[0];
+  if (currentPlayer.id != id) return;
+  if (this.anyBetterBid(bid)) return;
+  if (this.impossibleBid(bid)) return;
+  if (! currentPlayer.placeBid(bid)) return;
+  this.players.push(this.players.shift());
+  return true;
+};
+
+Game.prototype.anyBetterBid = function anyBetterBid(bid) {
+  return _.some(this.players, function (player) { return player.bid >= bid; });
+};
+
+Game.prototype.impossibleBid = function impossibleBid(bid) {
+  var maxBid = _
+    .chain(this.players)
+    .map('cards.pile.length')
+    .sum()
+    .value();
+  return bid > maxBid;
 };
 
 Game.prototype.playerPOV = function playerPOV(playerId) {

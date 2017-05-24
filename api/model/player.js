@@ -24,14 +24,27 @@ Player.prototype.play = function play(card) {
   return true;
 };
 
+Player.prototype.placeBid = function placeBid(bid) {
+  if (this.bid == -1) return;
+  if (bid <= 0) return;
+  this.bid = bid;
+  return true;
+};
+
 Player.prototype.playerPOV = function playerPOV(playerId) {
   var cardsView = this.id === playerId ? displayCards : obfuscateCards;
   return _
     .chain(this)
     .cloneDeep()
     .assign({ cards: _.mapValues(this.cards, cardsView) })
-    .assign({ bid: "none" })
+    .assign({ bid: this.bidJSON() })
     .value();
+};
+
+Player.prototype.bidJSON = function bidJSON() {
+  if (this.bid == -1) return "fold";
+  if (this.bid) return this.bid.toString();
+  return "none";
 };
 
 module.exports = Player;

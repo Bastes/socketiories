@@ -5,22 +5,6 @@ import Game.Bid exposing (Bid(..))
 import Game.Model exposing (Card(..), Cards, Player, Game)
 
 
-card : Char -> Result String Card
-card char =
-    case char of
-        'F' ->
-            Ok Flower
-
-        'S' ->
-            Ok Skull
-
-        '?' ->
-            Ok Hidden
-
-        c ->
-            Err <| "'" ++ (String.fromList [ c ]) ++ "' cannot be cast into a Card"
-
-
 isOk : Result a b -> Bool
 isOk result =
     case result of
@@ -51,6 +35,22 @@ fromErr result =
             Nothing
 
 
+card : Char -> Result String Card
+card char =
+    case char of
+        'F' ->
+            Ok Flower
+
+        'S' ->
+            Ok Skull
+
+        '?' ->
+            Ok Hidden
+
+        c ->
+            Err <| "'" ++ (String.fromList [ c ]) ++ "' cannot be cast into a Card"
+
+
 cardList : String -> Decoder (List Card)
 cardList string =
     let
@@ -68,9 +68,36 @@ cardListDecoder =
     string |> andThen cardList
 
 
+toDecoder : Result String a -> Decoder a
+toDecoder result =
+    case result of
+        Ok thingy ->
+            succeed thingy
+
+        Err err ->
+            fail err
+
+
+bidString : String -> Decoder Bid
+bidString string =
+    case string of
+        "fold" ->
+            succeed Fold
+
+        "none" ->
+            succeed None
+
+        _ ->
+            string
+                |> String.trim
+                |> String.toInt
+                |> Result.map Bid
+                |> toDecoder
+
+
 bid : Decoder Bid
 bid =
-    succeed None
+    string |> andThen bidString
 
 
 playerDecoder : Decoder Player
