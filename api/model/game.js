@@ -34,11 +34,16 @@ Game.prototype.play = function play(id, card) {
 Game.prototype.placeBid = function placeBid(id, bid) {
   var currentPlayer = this.players[0];
   if (currentPlayer.id != id) return;
+  if (!this.readyForBids()) return;
   if (this.anyBetterBid(bid)) return;
   if (this.impossibleBid(bid)) return;
   if (! currentPlayer.placeBid(bid)) return;
   this.players.push(this.players.shift());
   return true;
+};
+
+Game.prototype.readyForBids = function readyForBids() {
+  return _.every(this.players, function (player) { return player.cards.pile.length > 0; });
 };
 
 Game.prototype.biddingStarted = function biddingStarted() {
